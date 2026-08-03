@@ -1,0 +1,3 @@
+﻿*.pbix.bak
+.env
+Thumbs.db
