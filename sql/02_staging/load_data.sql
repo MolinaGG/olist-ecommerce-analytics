@@ -32,7 +32,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/olist_customers_datase
 INTO TABLE customers
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state);
 
@@ -43,7 +43,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/olist_sellers_dataset.
 INTO TABLE sellers
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (seller_id, seller_zip_code_prefix, seller_city, seller_state);
 
@@ -55,7 +55,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/olist_products_dataset
 INTO TABLE products
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (product_id, product_category_name, @name_lenght, @description_lenght, @photos_qty,
  @weight_g, @length_cm, @height_cm, @width_cm)
@@ -72,7 +72,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/olist_orders_dataset.c
 INTO TABLE orders
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (order_id, customer_id, order_status, @purchase_ts, @approved_at,
  @delivered_carrier_date, @delivered_customer_date, @estimated_delivery_date)
@@ -90,7 +90,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/olist_order_items_data
 INTO TABLE order_items
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (order_id, order_item_id, product_id, seller_id, @shipping_limit_date, price, freight_value)
 SET shipping_limit_date = NULLIF(@shipping_limit_date, '');
@@ -102,7 +102,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/olist_order_payments_d
 INTO TABLE order_payments
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (order_id, payment_sequential, payment_type, payment_installments, payment_value);
 
@@ -114,7 +114,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/olist_order_reviews_da
 INTO TABLE order_reviews
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (review_id, order_id, review_score, @comment_title, @comment_message, @creation_date, @answer_ts)
 SET
@@ -135,7 +135,7 @@ LOAD DATA LOCAL INFILE 'D:/Projetos ETL/Olist_retail/data/product_category_name_
 INTO TABLE category_translation_staging
 CHARACTER SET utf8mb4
 FIELDS TERMINATED BY ',' ENCLOSED BY '"'
-LINES TERMINATED BY '\r\n'
+LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (product_category_name, product_category_name_english);
 
