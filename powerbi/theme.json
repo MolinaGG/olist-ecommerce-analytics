@@ -1,0 +1,34 @@
+{
+  "name": "Olist Analytics · Molina",
+  "dataColors": [
+    "#366EE8",
+    "#198675",
+    "#D09C54",
+    "#8098C8",
+    "#93BCAE",
+    "#C9B8A0"
+  ],
+  "background": "#F3F6F8",
+  "foreground": "#203542",
+  "tableAccent": "#366EE8",
+  "good": "#198675",
+  "neutral": "#D09C54",
+  "bad": "#BA6047",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 12,
+      "color": "#203542"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 26,
+      "color": "#203542"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 10,
+      "color": "#627A87"
+    }
+  }
+}

@@ -1,49 +1,53 @@
-# DAX Measures — Olist E-Commerce Analytics
+# Medidas do Power BI revisado
 
-All measures live in a dedicated `_Measures` table (best practice: measures are not attached to any single fact table, since several combine data from both `fact_orders` and `fact_reviews`). Grouped by business pillar.
+As medidas financeiras preservam os nomes internos originais para manter os vínculos dos visuais. A documentação histórica anterior está em [`docs/dax_measures_original.md`](../docs/dax_measures_original.md).
 
----
+`olist_orders_enriched` contém uma linha por pedido com itens: entrega válida, atraso por dia de calendário, cancelamento, duração em dias corridos e última nota de avaliação. As medidas usam os pedidos visíveis em `fact_orders` para filtrar essa tabela com TREATAS.
 
-## 💰 Financial Health
+```dax
+Delivered Orders Valid =
+VAR Ids = VALUES(fact_orders[order_id])
+RETURN CALCULATE(COUNTROWS(olist_orders_enriched),
+    TREATAS(Ids, olist_orders_enriched[order_id]),
+    olist_orders_enriched[delivered_valid] = 1)
 
-| Measure | DAX | Business meaning |
-|---|---|---|
-| `Total Revenue` | `SUM(fact_orders[price])` | Gross merchandise revenue (excludes freight) |
-| `Total Freight` | `SUM(fact_orders[freight_value])` | Total freight cost across all order items |
-| `Total Orders` | `DISTINCTCOUNT(fact_orders[order_id])` | Distinct order count (fact_orders is item-grain, so this de-duplicates) |
-| `Avg Ticket` | `DIVIDE([Total Revenue], [Total Orders])` | Average order value |
-| `Revenue at Risk` | `CALCULATE([Total Revenue], FILTER(fact_orders, fact_orders[is_delayed] = 1 \|\| fact_orders[is_cancelled] = 1))` | Revenue tied to items in delayed or cancelled orders — money lost or nearly lost |
-| `% Revenue at Risk` | `DIVIDE([Revenue at Risk], [Total Revenue])` | Same, as a share of total revenue |
-| `Freight % of Revenue` | `DIVIDE([Total Freight], [Total Revenue])` | Freight cost efficiency indicator |
+Delayed Orders =
+VAR Ids = VALUES(fact_orders[order_id])
+RETURN CALCULATE(COUNTROWS(olist_orders_enriched),
+    TREATAS(Ids, olist_orders_enriched[order_id]),
+    olist_orders_enriched[delivered_valid] = 1,
+    olist_orders_enriched[is_late] = 1)
 
-## 🚚 Logistics Efficiency
+SLA % (On-Time Delivery) =
+DIVIDE([Delivered Orders Valid] - [Delayed Orders], [Delivered Orders Valid])
 
-| Measure | DAX | Business meaning |
-|---|---|---|
-| `Avg Lead Time (Days)` | `AVERAGEX(SUMMARIZE(fact_orders, fact_orders[order_id], "OrderLeadTime", AVERAGE(fact_orders[lead_time_days])), [OrderLeadTime])` | Average purchase-to-delivery time, computed at **order grain** (not item grain, to avoid over-weighting multi-item orders) |
-| `Delayed Orders` | `CALCULATE(DISTINCTCOUNT(fact_orders[order_id]), fact_orders[is_delayed] = 1)` | Count of distinct orders delivered after the estimated date |
-| `SLA % (On-Time Delivery)` | `1 - DIVIDE([Delayed Orders], [Total Orders])` | The headline SLA metric |
-| `Delay Rate %` | `DIVIDE([Delayed Orders], [Total Orders])` | Inverse of SLA %, useful for risk-framed visuals |
-| `Cancelled Orders` | `CALCULATE(DISTINCTCOUNT(fact_orders[order_id]), fact_orders[is_cancelled] = 1)` | Count of distinct cancelled orders |
-| `Cancellation Rate %` | `DIVIDE([Cancelled Orders], [Total Orders])` | Share of orders cancelled |
+Delay Rate % = DIVIDE([Delayed Orders], [Delivered Orders Valid])
 
-## ⭐ Supplier Quality
+Avg Lead Time (Days) =
+VAR Ids = VALUES(fact_orders[order_id])
+RETURN CALCULATE(AVERAGE(olist_orders_enriched[lead_time_days]),
+    TREATAS(Ids, olist_orders_enriched[order_id]),
+    olist_orders_enriched[delivered_valid] = 1)
 
-| Measure | DAX | Business meaning |
-|---|---|---|
-| `Avg Review Score` | `AVERAGE(fact_reviews[review_score])` | Average customer satisfaction (1–5) |
-| `Total Reviews` | `COUNTROWS(fact_reviews)` | Review volume |
-| `Avg Response Time (Days)` | `AVERAGE(fact_reviews[response_time_days])` | How fast sellers/platform respond to reviews |
-| `Total Sellers` | `DISTINCTCOUNT(dim_seller[seller_key])` | Active seller count (dimension-level, unaffected by fact filters) |
-| `Gold Partners` | `CALCULATE(DISTINCTCOUNT(dim_seller[seller_key]), dim_seller[segment_tier] = "Gold Partner")` | Count of top-tier sellers, per the SQL-computed segmentation |
-| `% Gold Partners` | `DIVIDE([Gold Partners], [Total Sellers])` | Share of the seller base in the top tier |
-| `Operational Risk Sellers` | `CALCULATE(DISTINCTCOUNT(dim_seller[seller_key]), dim_seller[segment_tier] = "Operational Risk")` | Count of sellers flagged as operational risk |
+Avg Review Score =
+VAR Ids = VALUES(fact_orders[order_id])
+RETURN CALCULATE(AVERAGE(olist_orders_enriched[review_score]),
+    TREATAS(Ids, olist_orders_enriched[order_id]))
 
----
+Total Reviews =
+VAR Ids = VALUES(fact_orders[order_id])
+RETURN CALCULATE(COUNT(olist_orders_enriched[review_score]),
+    TREATAS(Ids, olist_orders_enriched[order_id]))
 
-## Design notes
+Total Sellers = DISTINCTCOUNT(fact_orders[seller_key])
+Total Revenue = SUM(fact_orders[price])
+Total Freight = SUM(fact_orders[freight_value])
+Total Orders = DISTINCTCOUNT(fact_orders[order_id])
+Avg Ticket = DIVIDE([Total Revenue], [Total Orders])
+```
 
-- **All business logic (segmentation, ranking, risk classification) lives in SQL**, not DAX — `dim_seller[segment_tier]` is populated from `vw_supplier_performance.supplier_segment`, computed with `DENSE_RANK()`/`CASE` in MySQL. DAX measures here only aggregate and format; they never recalculate what the SQL layer already decided.
-- `Avg Lead Time (Days)` intentionally uses `SUMMARIZE` + `AVERAGEX` instead of a flat `AVERAGE(fact_orders[lead_time_days])`, because `fact_orders` is at **item grain**: a naive average would let orders with more line items pull the number disproportionately. Computing the average at order grain first avoids that bias.
-- `fact_orders` × `fact_reviews` has an **inactive relationship** on `order_id` in the model (both tables already connect through `dim_date` and `dim_seller`). No measure here uses `USERELATIONSHIP()` yet — reserved for a future cross-fact metric if needed (e.g., "average review score of orders delayed by more than 5 days").
-- Percentage measures (`SLA %`, `% Revenue at Risk`, etc.) should be formatted as percentage in the Power BI field properties, not multiplied by 100 in DAX.
+`Revenue at Risk` mantém a expressão original sobre os flags de `fact_orders`, agora reconstruídos com a mesma regra por dia de calendário. O rótulo público é **Valor com ocorrência**: atraso e cancelamento não comprovam perda financeira.
+
+Na matriz financeira, os visuais usam `SUM(vw_financial_health[total_revenue])` e `SUM(vw_financial_health[revenue_at_risk])`, em vez de medidas globais desconectadas da categoria. O percentual somável da matriz original foi removido para evitar um total inválido.
+
+Os snapshots `vw_*` representam todo o período. São agregações pré-calculadas, não medidas que reclassificam fornecedores em qualquer recorte temporal. A versão web recalcula os segmentos no recorte atual.

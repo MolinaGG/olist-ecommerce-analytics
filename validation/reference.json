@@ -1,0 +1,12 @@
+{
+  "orders": 98666,
+  "productsCents": 1359164370,
+  "freightCents": 225190954,
+  "items": 112650,
+  "deliveredWithDates": 96470,
+  "late": 6534,
+  "reviewedOrders": 97917,
+  "excludedNoItems": 775,
+  "jsonBytes": 4514483,
+  "sla": 0.9322690992018244
+}

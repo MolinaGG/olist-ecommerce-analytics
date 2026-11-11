@@ -1,3 +1,7 @@
-﻿*.pbix.bak
+*.pbix.bak
 .env
+.env.*
 Thumbs.db
+__pycache__/
+*.pyc
+node_modules/

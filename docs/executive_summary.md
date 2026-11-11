@@ -1,57 +1,13 @@
-# Executive Summary - Olist Marketplace Analytics
+# Resumo executivo — versão revisada
 
-Scope: ~99,000 orders analyzed across logistics, supplier quality, and financial health, using the Olist Brazilian e-commerce dataset (2016-2018).
+O dashboard reúne 98.666 pedidos com itens e R$ 13.591.643,70 em produtos. O frete soma R$ 2.251.909,54, equivalente a aproximadamente 16,6% do valor dos produtos.
 
----
+Das 96.470 entregas com datas válidas, 6.534 chegaram em dia posterior ao prometido. A pontualidade é de 93,2269%. A definição considera o dia de calendário e exclui pedidos ainda não entregues.
 
-## The Headline
+A avaliação média é 4,10466/5, calculada com a última avaliação registrada de cada um dos 97.917 pedidos avaliados. Um pedido com vários itens conta apenas uma vez.
 
-The marketplace generated R$13.59M in revenue at a 92% on-time delivery rate and a 4.09/5 average customer satisfaction score - a fundamentally healthy operation. But two structural risks stand out:
+R$ 1.081.159,61 em produtos estão ligados a pedidos cancelados ou atrasados. Isso é exposição a ocorrência operacional e não demonstra prejuízo, cancelamento de recebimento ou perda de margem.
 
-1. 9% of revenue (R$1.25M) is tied to cancelled or late-delivered orders - a direct, quantifiable cost of operational failure.
-2. 22% of the seller base (roughly 1 in 5 sellers) is flagged "Operational Risk" - underperforming on either delivery reliability or customer satisfaction, or both.
+São Paulo concentra R$ 5.202.955,05 em produtos por estado do cliente. Os rankings de categorias e estados permitem explorar concentração de volume e sinais operacionais, sem inferir causalidade ou desempenho futuro.
 
----
-
-## Financial Health
-
-| Metric | Value |
-|---|---|
-| Total Revenue | R$13.59M |
-| Total Orders | ~99,000 |
-| Average Ticket | R$137.75 |
-| Revenue at Risk | R$1.25M (9%) |
-| Freight Cost | 17% of revenue |
-
-Revenue grew from near-zero in 2016 to ~R$7M in 2018 - a trajectory consistent with the platform's real-world scale-up. The top revenue categories (health & beauty, watches & gifts, home goods, sports & leisure) match Olist's known category mix, a good sanity check on the pipeline's correctness.
-
-## Logistics Efficiency
-
-| Metric | Value |
-|---|---|
-| Avg. Lead Time | 12.5 days |
-| On-Time Delivery (SLA) | 92% |
-| Delay Rate | 8% |
-
-The Southeast region (Sudeste) - Brazil's most populous and commercially dense area - carries the largest order volume and the best delivery efficiency. Smaller-volume regions (North, parts of the Northeast) show proportionally higher delay rates, a pattern consistent with longer shipping distances and less carrier density.
-
-## Supplier Quality
-
-| Segment | Share of Sellers |
-|---|---|
-| Regular Operation | 72.7% |
-| Operational Risk | 22.2% |
-| Gold Partner | 5.1% |
-
-Segmentation is computed directly in SQL from review score, on-time delivery rate, and order volume - not a subjective label. The ~1-in-5 sellers in "Operational Risk" represent the clearest, most actionable target for a supplier improvement program.
-
----
-
-## What This Project Demonstrates
-
-- Relational database design: a lean, normalized 7-table MySQL schema built from raw CSVs, with explicit data-quality checks (duplicate keys, referential integrity, out-of-range values).
-- Advanced SQL: multi-CTE analytical views combining window functions (DENSE_RANK, RANK, PERCENT_RANK, NTILE, AVG() OVER ()) to produce ranking, benchmarking, and executive segmentation - entirely in the database layer.
-- Dimensional modeling: a Star Schema (5 dimensions, 2 fact tables at different grains) designed for Power BI performance and flexibility.
-- BI storytelling: a 4-page executive dashboard translating raw operational data into decisions a marketplace operator could act on this week.
-
-Full technical documentation, SQL scripts, and the interactive dashboard are available in the project repository.
+Este é um estudo histórico e independente. Os meses nas extremidades da base podem estar incompletos. Consulte [a metodologia](METHODOLOGY.md) para denominadores, filtros, deduplicação e diferenças entre web e Power BI.
