@@ -1,61 +1,52 @@
 # Olist E-commerce Analytics
 
-Análise de e-commerce com dashboard interativo e relatório Power BI revisado. Estudo independente por **Guilherme Molina Solano**, com dados públicos históricos de 2016–2018; sem vínculo comercial com a Olist.
+**Business intelligence for delivery performance and order-value analysis.** Independent study by Guilherme Molina Solano using historical public data from 2016–2018; no commercial affiliation with Olist.
 
-[Demonstração no portfólio](https://guilherme-molina-portfolio.guilhermemolinasolan.chatgpt.site/olist/) · [Portfólio e código](https://github.com/MolinaGG/guilherme-molina-portfolio) · [Metodologia e uso](docs/METHODOLOGY.md)
+[Interactive demo — Portuguese](https://guilherme-molina-portfolio.guilhermemolinasolan.chatgpt.site/olist/) · [Case study](docs/CASE_STUDY.md) · [Português](README.pt-BR.md) · [Portfolio](https://guilherme-molina-portfolio.guilhermemolinasolan.chatgpt.site/)
 
-A demonstração hospedada permanece privada para revisão do proprietário. O código deste repositório pode ser executado localmente.
+![Olist interactive dashboard](assets/screenshots/web_dashboard.png)
 
-![Dashboard interativo](assets/screenshots/web_dashboard.png)
+## The business question
 
-## O que foi melhorado
+Which regions, categories and suppliers warrant investigation when monitoring delivery performance, order value and customer reviews?
 
-- Quatro visões web: Visão geral, Logística, Categorias & valor e Fornecedores.
-- Filtros por mês da compra, estado do cliente, categoria e status; exportação CSV da tabela visível.
-- Power BI com quatro páginas reorganizadas, evolução mensal cronológica e gráficos por estado em lugar de mapas sujeitos a geocodificação ambígua.
-- Matriz financeira com valores da própria categoria, sem repetir o total geral em cada linha.
-- Taxa de pontualidade com denominador de entregas válidas e comparação por dia de calendário.
-- Avaliações deduplicadas por pedido, sem peso extra por número de itens.
-- Fontes do PBIX em CSVs portáteis, sem dependência de MySQL para abrir ou explorar os dados já importados.
+The project combines a web dashboard with a Power BI report. Python scripts rebuild the current data snapshots from the original CSVs. The historical MySQL pipeline is retained in `sql/` as a separate reference; it is not the source of the revised dashboard snapshots.
 
-## Indicadores de referência
+## Documented baseline
 
-| Indicador | Resultado |
-|---|---:|
-| Pedidos distintos com itens | 98.666 |
-| Itens | 112.650 |
-| Valor em produtos, sem frete | R$ 13.591.643,70 |
-| Frete | R$ 2.251.909,54 |
-| Entregas com datas válidas | 96.470 |
-| Entregas em atraso | 6.534 |
-| Pontualidade | 93,2269% |
-| Pedidos avaliados | 97.917 |
-| Avaliação média por pedido | 4,10466 / 5 |
-| Valor em pedidos com atraso ou cancelamento | R$ 1.081.159,61 |
+| Metric | Value |
+| --- | ---: |
+| Distinct orders with items | 98,666 |
+| Items | 112,650 |
+| Product value, excluding freight | BRL 13,591,643.70 |
+| Deliveries with valid dates | 96,470 |
+| Late deliveries | 6,534 |
+| On-time delivery rate | 93.2269% |
+| Average review score per reviewed order | 4.10466 / 5 |
 
-São excluídos 775 pedidos sem itens. Valor em produtos não é receita reconhecida nem lucro. Valor com atraso ou cancelamento é exposição a uma ocorrência operacional, **não uma perda financeira comprovada**. Meses nas extremidades da base podem estar incompletos.
+These are observations from the historical dataset, not improvements delivered to a client. Product value is not recognized revenue or profit. Value associated with late or cancelled orders is not a demonstrated loss. Orders without items are excluded (775 orders); boundary months may be incomplete.
 
-Os totais foram confrontados com os CSVs e consultados no modelo Power BI após reabrir o arquivo final.
+## Analytical decisions
 
-## Executar o dashboard
+- Keep item-level amounts additive while counting orders only once.
+- Use valid delivered orders as the denominator for on-time delivery.
+- Use the latest review per order, avoiding extra weight for multiple items.
+- Recalculate web indicators with the same filter scope and export the visible table.
+- Document Power BI full-period aggregate snapshots separately from filter-responsive executive measures.
+
+See the [case study](docs/CASE_STUDY.md) and [detailed methodology, in Portuguese](docs/METHODOLOGY.md).
+
+## Explore locally
 
 ```bash
 python -m http.server 8000 --directory dashboard
 ```
 
-Abra http://localhost:8000. Não há etapa de compilação nem biblioteca de gráficos externa. HTML, CSS e JavaScript incluem renderização SVG, estados vazios e tratamento de falha no carregamento.
+Open http://localhost:8000. The dashboard uses HTML, CSS, JavaScript and SVG; no build step or external charting library is required.
 
-## Abrir o Power BI
+Open [the Power BI report](powerbi/olist_ecommerce_dashboard.pbix) in a recent Power BI Desktop. Data is already imported. To refresh after moving the project, set the **OlistDataPath** parameter to the absolute path of `powerbi/data`. Aggregate category, region and supplier views are full-period snapshots; consult the methodology before interpreting filters.
 
-Abra [`powerbi/olist_ecommerce_dashboard.pbix`](powerbi/olist_ecommerce_dashboard.pbix) em uma versão recente do Power BI Desktop. Os dados já estão importados no arquivo.
-
-Para atualizar após mover o projeto, ajuste o parâmetro **OlistDataPath** para o caminho absoluto de `powerbi/data` no seu computador. A atualização lê os snapshots CSV locais, não dados atuais de uma operação comercial. O parâmetro pode ainda apontar para a pasta do ambiente de preparação; altere-o antes de atualizar.
-
-O tema está em [`powerbi/theme.json`](powerbi/theme.json). As páginas agregadas do Power BI são snapshots do período completo; não são recalculadas por mês como os gráficos da versão web. Consulte a metodologia antes de interpretar filtros entre tabelas.
-
-## Reconstruir os dados
-
-Requer Python 3, pandas e NumPy. Os arquivos originais em `data/` são os mesmos da revisão histórica `cf8524a59b856e684d6538aa3f7c524e15438b43`.
+## Rebuild and check
 
 ```bash
 python -m pip install -r requirements.txt
@@ -64,22 +55,6 @@ python scripts/build_powerbi_data.py
 node --test tests/metrics.test.cjs
 ```
 
-O primeiro script gera `dashboard/data.json` e os totais e hashes em `validation/`. O segundo reconstrói `powerbi/data/` a partir dos CSVs originais, incluindo dimensões, fatos, avaliações e snapshots agregados. Depois da reconstrução, atualize o PBIX com o parâmetro de pasta correto. A montagem visual do PBIX foi feita e validada no Power BI Desktop; os scripts não recriam o relatório visual do zero.
+The scripts recreate the data artifacts, not the visual PBIX layout. Validation totals and source hashes are in `validation/`. Original CSVs are in `data/`; current data preparation is in `scripts/`.
 
-## Estrutura
-
-```text
-dashboard/       # demonstração web independente
-powerbi/         # PBIX, tema e snapshots de atualização
-scripts/         # reconstrução reproduzível dos dados
-tests/           # testes de granularidade, filtros e reconciliação
-validation/      # totais de referência e hashes dos arquivos de origem
-assets/          # capturas das versões revisadas
-data/            # CSVs públicos originais
-sql/             # pipeline MySQL histórico, preservado como referência
-docs/            # metodologia, medidas e documentação
-```
-
-As consultas SQL originais foram preservadas e não são a fonte dos snapshots revisados. Suas premissas anteriores podem diferir dos critérios documentados da nova versão.
-
-Fonte original: [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). A base contém identificadores públicos pseudonimizados; a versão web usa códigos locais e não publica textos de avaliações nem identificadores originais de clientes.
+Source: [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). The web demo uses local supplier codes and excludes raw review text and original customer identifiers. Hosted demo access was confirmed public on 20 November 2026.
