@@ -4,7 +4,7 @@
 
 https://guilherme-molina-portfolio.guilhermemolinasolan.chatgpt.site/olist/
 
-Acesso preservado: privado para o proprietário, como o portfólio. Quatro visões: Visão geral, Logística, Categorias & valor, Fornecedores. Filtros por mês da compra, estado do cliente, categoria e status. Exportação CSV da tabela exibida, com os filtros identificados. O ranking de fornecedores exporta as mesmas até 30 linhas mostradas na interface.
+Acesso público confirmado na configuração da hospedagem em 20/11/2026. Quatro visões: Visão geral, Logística, Categorias & valor, Fornecedores. Filtros por mês da compra, estado do cliente, categoria e status. Exportação CSV da tabela exibida, com os filtros identificados. O ranking de fornecedores exporta as mesmas até 30 linhas mostradas na interface.
 
 ## Power BI Desktop
 
